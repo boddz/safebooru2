@@ -60,7 +60,12 @@ class RequestHandler:
     """
     A class containing helper methods for building the initial request to
     safebooru.org and getting response data back.
+
+    headers: User defined headers to use when sending a request.
     """
+    def __init__(self, headers: dict = None) -> None:
+        self.headers = headers if headers is not None else self._headers
+
     @property
     def _user_agent(self) -> str:
         """
@@ -105,7 +110,8 @@ class RequestHandler:
         it is meant to be persistent, you should only need one.
         """
         session = Session()
-        session.headers.update(self._headers)
+        session.headers.update(
+            self.headers if self.headers else self._headers)
         return session
 
     def get(self, url: str, **kwargs) -> "Response Object":
@@ -116,6 +122,9 @@ class RequestHandler:
 class Image:
     """
     This represents the post image file that is stored on safebooru.org.
+
+    url: The URL to the images location on safebooru.org.
+    ext: The image file type (jpg: j, png: p, gif: g).
     """
     url: str
     ext: str
@@ -127,7 +136,7 @@ class Image:
         """
         return f"{urlparse(self.url).query}{ImageType.which(self.ext)}"
 
-    def fetch(self, handler: RequestHandler,
+    def download(self, handler: RequestHandler,
               file_name: str = file_name) -> None:
         """
         Fetches the image file bytes from safebooru.org and writes to a file.
@@ -185,10 +194,42 @@ class Posts:
         return RequestHandler.url_gen(Safebooru._HOMEPAGE,
                                       Safebooru._DEST, self.params)
 
+    def fetch_json(self, handler: RequestHandler) -> dict:
+        """
+        Parse the raw content and convert it into a json style dict.
+
+        Usage
+        -----
+        ```
+        handler = RequestHandler()
+        post = Posts(id=Safebooru().random_id)  # Use completely random ID.
+        print(post.fetch_json(handler))
+        """
+        return handler.get(self.url).json()
+
+    def fetch_content(self, handler: RequestHandler) -> str:
+        """
+        Simply fetch the raw response content do not parse to dict.
+        """
+        return handler.get(self.url).text
+
 
 @dataclass
 class Tags:
-    ...
+    """
+    Represents a tag valid tag for a post on safebooru.org.
+
+    id:           The tag's id in the database. This is useful to grab a
+                  specific tag if you already know this value.
+    limit:        How many tags you want to retrieve. There is a default limit
+                  of 100 per request.
+    after_id:     Grab tags whose ID is greater than this value.
+    name:         Find tag information based on this value.
+    name_pattern: A wildcard search for your query using LIKE. Use _ for
+                  single character wildcards or % for multi-character
+                  wildcards. (%choolgirl% would act as *choolgirl* wildcard
+                  search.)
+    """
     # TODO: add tags list search option
     # URL Access point: /index.php?page=dapi&s=tag&q=index
     # API Tags doc: <https://gelbooru.com/index.php?page=wiki&s=view&id=18780>
@@ -223,7 +264,7 @@ class Comments:
         return RequestHandler.url_gen(Safebooru._HOMEPAGE,
                                       Safebooru._DEST, self.params)
 
-    def fetch(self, handler: RequestHandler) -> dict:
+    def fetch_json(self, handler: RequestHandler) -> dict:
         """
         Fetch raw text (XML) for specified comment/ all comments and use
         `xmltodict.parse()` to parse the response into a dict.
@@ -231,14 +272,17 @@ class Comments:
         Usage
         -----
         ```
-        handler = RequestHandler()
+        handler = RequestHandler(headers=None)
         comms = Comments(post_id=4084270)
-        print(comms.fetch(handler))
+        print(comms.fetch_json(handler))
         ```
         """
         return xmltodict.parse(handler.get(self.url).text)
 
-    def fetch_raw(self, handler: RequestHandler) -> str:
+    def fetch_content(self, handler: RequestHandler) -> str:
+        """
+        Fetch the raw response content do not parse to dict.
+        """
         return handler.get(self.url).text
 
 
@@ -250,6 +294,46 @@ class Safebooru(RequestHandler):
     _HOMEPAGE = "https://safebooru.org"
     _DEST = "index.php?"
 
-    def __init__(self, ) -> None:
-        super().__init__()
-        self.__handler = RequestHandler()
+    def __init__(self, headers: dict = None) -> None:
+        super().__init__(headers)
+        self.__handler = RequestHandler(headers=headers)
+
+    @property
+    def handler(self) -> RequestHandler:
+        """
+        Point to mangled RequestHandler object; easier name for accessing the
+        Handler but property of course still cannot be changed by end user.
+        """
+        return self.__handler
+
+    @property
+    def session(self) -> Session:
+        """
+        Point to self.__handler.session instance object instead.
+        """
+        return self.__handler.session
+
+    @property
+    def _random_redirect_url(self) -> str:
+        """
+        Get the redirect URL for a random post.
+        """
+        get_random = "https://safebooru.org/index.php?page=post&s=random"
+        return self.handler.get(get_random).url
+
+    @property
+    def random_id(self) -> int:
+        """
+        With `self._random_redirect_url` parse and return the post ID as int.
+        """
+        return int(urlparse(self._random_redirect_url).query[20:])
+
+
+if __name__ == "__main__":
+    handler = RequestHandler()
+    #sb = Safebooru()
+    
+    post = Posts(id=Safebooru().random_id)
+    print(post.fetch_json(handler))
+    
+    #print(sb.random_id)
