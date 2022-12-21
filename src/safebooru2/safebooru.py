@@ -253,15 +253,3 @@ class Safebooru(RequestHandler):
     def __init__(self, ) -> None:
         super().__init__()
         self.__handler = RequestHandler()
-
-
-if __name__ == "__main__":
-    # TODO: put some program options/ args here instead.
-
-    # print(ImageExt.which('j'))
-
-    handler = RequestHandler()
-
-    post = Posts(id=132)
-
-    print(post.url)

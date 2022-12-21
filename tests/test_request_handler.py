@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from requests import Session
-from src import safebooru
+from src import safebooru2
 
 
 class TestRequestHandler(TestCase):
@@ -10,7 +10,7 @@ class TestRequestHandler(TestCase):
     can just ignore this.
     """
     def setUp(self):
-        self.handler = safebooru.RequestHandler()
+        self.handler = safebooru2.RequestHandler()
         self.id = 4084270
         self.tags = "akemi_homura"
         self.random_url = "https://safebooru.org/index.php?page=post&s=random"

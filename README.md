@@ -1,4 +1,4 @@
-# Safebooru (rev2)
+# Safebooru2 (rev2)
 
 A module containing classes and methods for interacting with the safebooru.org
 public API. This is my second API wrapper module for safebooru.org, here's the
@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ## Usage
 
 Well right now, this is not really intended for use, however if you want to
-then you need to include the module `src.safebooru` in `main.py` or something.
+then you need to include the module `src.safebooru2` in `main.py` or something.
 
 
 ## Testing

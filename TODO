@@ -3,3 +3,9 @@ Example in main
 
 Create a brief example of how to use the module (once more is comleted) in the
 main.py file.
+
+
+Add pip setup
+-------------
+
+Setup file for pip for PyPi package.
