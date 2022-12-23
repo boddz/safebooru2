@@ -213,6 +213,15 @@ class Posts:
         """
         return handler.get(self.url).text
 
+    def image_url(self, handler: RequestHandler, post_num: int = 0) -> str:
+        """
+        The location where the image for the post is stored on safebooru.org.
+        """
+        json = self.fetch_json(handler)[post_num]  # Json index is post_num.
+        url = urljoin(Safebooru._HOMEPAGE, f"images/{json['directory']}/" \
+                      f"{json['image']}?{json['id']}")
+        return url
+
 
 @dataclass
 class Tags:
@@ -290,6 +299,8 @@ class Safebooru(RequestHandler):
     """
     This is the main class intended for use. It has all of the 'polished'
     methods and properties for scraping useful data from safebooru.org.
+
+    id: Specify the post you want to interact with via it's ID.
     """
     _HOMEPAGE = "https://safebooru.org"
     _DEST = "index.php?"
@@ -328,12 +339,37 @@ class Safebooru(RequestHandler):
         """
         return int(urlparse(self._random_redirect_url).query[20:])
 
+    def image_ext(self, json: dict) -> str:
+        """
+        Using a post's json data, return the shorthand version of image ext.
+        """
+        return json["image"][-3:-2]
+
+    def json_from(self, obj: Posts | Comments) -> dict:
+        """
+        From either a post or a comment object, return it's full json.
+
+        Usage
+        -----
+        ```
+        sb = Safebooru()
+        post = Posts(id=sb.random_id)
+        print(sb.json_from(post)[0])
+        ```
+        """
+        return obj.fetch_json(self.handler)
+
 
 if __name__ == "__main__":
-    handler = RequestHandler()
-    #sb = Safebooru()
-    
-    post = Posts(id=Safebooru().random_id)
-    print(post.fetch_json(handler))
-    
+    """
+    This is only for scuffed quick testing purposes, TODO: remove once done.
+    """
+    #handler = RequestHandler()
+    sb = Safebooru()
+
+    post = Posts(id=sb.random_id)
+    print(sb.json_from(post)[0])
+    #print(post.image_url(handler))
+    #print(post.fetch_json(handler))
+
     #print(sb.random_id)
