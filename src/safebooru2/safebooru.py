@@ -416,7 +416,7 @@ class Safebooru(RequestHandler):
         """
         return obj.fetch_json(self.handler)
 
-    def content_from(self, obj: Posts | Comments | Tags) -> dict:
+    def content_from(self, obj: Posts | Comments | Tags) -> str:
         """
         From a `Posts`, `Tags` or `Comments` object, return raw content.
         """
