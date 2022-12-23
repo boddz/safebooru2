@@ -3,6 +3,7 @@ PY_SITE_PACKAGES := venv/lib64/python3.10/site-packages/
 CLEAN := src/safebooru2/__pycache__ tests/__pycache__
 TEST := tests/test_request_handler.py tests/test_image_type.py \
 		tests/test_image.py tests/test_posts.py tests/test_comments.py \
+		tests/test_safebooru.py
 
 all: main
 
