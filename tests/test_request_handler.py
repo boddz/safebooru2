@@ -23,7 +23,7 @@ class TestRequestHandler(TestCase):
 
     def test_handler_url_gen(self):
         self.assertEqual(self.random_url,
-                         self.handler.url_gen("https://safebooru.org",
+                         self.handler._url_gen("https://safebooru.org",
                          "index.php?", {"page": "post", "s": "random"}))
 
     def test_handler_session_type(self):
