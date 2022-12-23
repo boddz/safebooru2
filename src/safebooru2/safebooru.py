@@ -7,6 +7,8 @@ link to that: <https://github.com/boddz/safebooru> it is one of my older
 projects, some things are poorly done, and I am bored so that's why this
 module is a thing.
 
+Lotta inspiration from some great work by: <https://github.com/hentai-chan>
+
 For some more information about the safebooru.org API, you can find some
 official documentation: <https://safebooru.org/index.php?page=help&topic=dapi>
 
