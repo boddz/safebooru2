@@ -7,14 +7,14 @@ link to that: <https://github.com/boddz/safebooru> it is one of my older
 projects, some things are poorly done, and I am bored so that's why this
 module is a thing.
 
-Lotta inspiration from some great work by: <https://github.com/hentai-chan>
-
 For some more information about the safebooru.org API, you can find some
 official documentation: <https://safebooru.org/index.php?page=help&topic=dapi>
 
 As safebooru.org is running a variant of Gelbooru, you can find a bit more
 documentation at: <https://gelbooru.com/index.php?page=wiki&s=view&id=18780>
 Other parts of gelbooru.com are NSFW, so heads up.
+
+Lotta inspiration from: <https://github.com/hentai-chan>
 
 To be released under the GNU GPLv3 licence, which can be found in the source
 directory, or with this link: <https://www.gnu.org/licenses/gpl-3.0.en.html>
@@ -52,16 +52,16 @@ class ImageType(Enum):
     @classmethod
     def which(cls, key: str) -> str:
         """
-        Returns the file extension of image file; accepts 'p', 'j' or 'g' as
-        params, e.g. `ImageType.which('g')` should return ".gif".
+        From key ('j', 'p' or 'g') return as full version of image ext.
         """
         return f".{cls(key).name.lower()}"
 
 
 class RequestHandler:
     """
-    A class containing helper methods for building the initial request to
-    safebooru.org and getting response data back.
+    A class containing helper methods for building the initial requests
+    session (using requests.Session) to safebooru.org and getting response
+    data back.
 
     headers: User defined headers to use when sending a request.
     """
@@ -84,7 +84,7 @@ class RequestHandler:
         return {"User-Agent": self._user_agent}
 
     @staticmethod
-    def url_gen(base_url: str, dest: str, params: dict) -> str:
+    def _url_gen(base_url: str, dest: str, params: dict) -> str:
         """
         Generate valid URL to be used in a request.
 
@@ -96,7 +96,7 @@ class RequestHandler:
         params = {"page": "help", "topic": "dapi"}
 
         # Should output "https://safebooru.org/index.php?page=help&topic=dapi"
-        print(RequestHandler.url_gen(base, dest, params))
+        print(RequestHandler._url_gen(base, dest, params))
         ```
         """
         format_params = str()
@@ -126,7 +126,7 @@ class Image:
     This represents the post image file that is stored on safebooru.org.
 
     url: The URL to the images location on safebooru.org.
-    ext: The image file type (jpg: j, png: p, gif: g).
+    ext: The image file type (jpg: 'j', png: 'p', gif: 'g').
     """
     url: str
     ext: str
@@ -139,7 +139,7 @@ class Image:
         return f"{urlparse(self.url).query}{ImageType.which(self.ext)}"
 
     def download(self, handler: RequestHandler,
-              file_name: str = file_name) -> None:
+                 file_name: str = file_name) -> None:
         """
         Fetches the image file bytes from safebooru.org and writes to a file.
 
@@ -159,7 +159,7 @@ class Image:
 @dataclass(frozen=True)
 class Posts:
     """
-    A dataclass which represents a valid post on safebooru.org.
+    A dataclass which represents a valid post[s] on safebooru.org.
 
     limit: How many posts you want to retrieve. There is a hard limit of 100
            posts per request.
@@ -178,7 +178,7 @@ class Posts:
     id: int = 0
 
     @property
-    def params(self) -> dict:
+    def __params(self) -> dict:
         return {
             "page": "dapi",
             "s": "post",
@@ -193,8 +193,11 @@ class Posts:
 
     @property
     def url(self) -> str:
-        return RequestHandler.url_gen(Safebooru._HOMEPAGE,
-                                      Safebooru._DEST, self.params)
+        """
+        Endpoint for accessing data (json) about specified post[s].
+        """
+        return RequestHandler._url_gen(Safebooru._HOMEPAGE,
+                                      Safebooru._DEST, self.__params)
 
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
@@ -228,7 +231,7 @@ class Posts:
 @dataclass
 class Tags:
     """
-    Represents a tag valid tag for a post on safebooru.org.
+    Represents a tag valid tag[s] for a post on safebooru.org.
 
     id:           The tag's id in the database. This is useful to grab a
                   specific tag if you already know this value.
@@ -241,9 +244,53 @@ class Tags:
                   wildcards. (%choolgirl% would act as *choolgirl* wildcard
                   search.)
     """
-    # TODO: add tags list search option
-    # URL Access point: /index.php?page=dapi&s=tag&q=index
-    # API Tags doc: <https://gelbooru.com/index.php?page=wiki&s=view&id=18780>
+    id: int = None
+    limit: int = 100
+    after_id: int = None
+    name: str = str()
+    name_pattern: str = str()
+
+    @property
+    def __params(self) -> dict:
+        return {
+            "page": "dapi",
+            "s": "tag",
+            "q": "index",
+            "id": str() if self.id is None else self.id,  # Dont break params.
+            "limit": self.limit,
+            "after_id": str() if self.after_id is None else self.after_id,
+            "name": self.name,
+            "name_pattern": self.name_pattern
+        }
+
+    @property
+    def url(self) -> str:
+        """
+        Endpoint for accessing data (XML) about specified tag[s].
+        """
+        return RequestHandler._url_gen(Safebooru._HOMEPAGE,
+                                      Safebooru._DEST, self.__params)
+    
+    def fetch_json(self, handler: RequestHandler) -> dict:
+        """
+        Fetch raw XML for specified tag[s] and use `xmltodict.parse()` to
+        parse the response into a dict/ json.
+
+        Usage
+        -----
+        ```
+        handler = RequestHandler(headers=None)
+        tags = Tags(limit=4)  # Fetch the first 4 tags on index.
+        print(tags.fetch_json(handler))
+        ```
+        """
+        return xmltodict.parse(handler.get(self.url).text)
+
+    def fetch_content(self, handler: RequestHandler) -> str:
+        """
+        Fetch the raw response content do not parse to dict/ json.
+        """
+        return handler.get(self.url).text
 
 
 @dataclass(frozen=True)
@@ -262,7 +309,7 @@ class Comments:
     list_all: bool = False
 
     @property
-    def params(self) -> dict:
+    def __params(self) -> dict:
         return {
             "page": "dapi",
             "s": "comment",
@@ -272,8 +319,11 @@ class Comments:
 
     @property
     def url(self) -> str:
-        return RequestHandler.url_gen(Safebooru._HOMEPAGE,
-                                      Safebooru._DEST, self.params)
+        """
+        Endpoint for accessing data (XML) about specified comments.
+        """
+        return RequestHandler._url_gen(Safebooru._HOMEPAGE,
+                                      Safebooru._DEST, self.__params)
 
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
@@ -301,8 +351,6 @@ class Safebooru(RequestHandler):
     """
     This is the main class intended for use. It has all of the 'polished'
     methods and properties for scraping useful data from safebooru.org.
-
-    id: Specify the post you want to interact with via it's ID.
     """
     _HOMEPAGE = "https://safebooru.org"
     _DEST = "index.php?"
@@ -315,7 +363,7 @@ class Safebooru(RequestHandler):
     def handler(self) -> RequestHandler:
         """
         Point to mangled RequestHandler object; easier name for accessing the
-        Handler but property of course still cannot be changed by end user.
+        handler, however property of course cannot be changed by end user.
         """
         return self.__handler
 
@@ -346,10 +394,17 @@ class Safebooru(RequestHandler):
         Using a post's json data, return the shorthand version of image ext.
         """
         return json["image"][-3:-2]
-
-    def json_from(self, obj: Posts | Comments) -> dict:
+    
+    def image_ext_full(self, json: dict) -> str:
         """
-        From either a post or a comment object, return it's full json.
+        Using a post's json data, return the full version of image ext.
+        """
+        return json["image"][-3:]
+
+    def json_from(self, obj: Posts | Comments | Tags) -> dict:
+        """
+        From a `Posts`, `Tags` or a `Comments` object, return associated json
+        or XML data parsed into a dict.
 
         Usage
         -----
@@ -361,17 +416,19 @@ class Safebooru(RequestHandler):
         """
         return obj.fetch_json(self.handler)
 
+    def content_from(self, obj: Posts | Comments | Tags) -> dict:
+        """
+        From a `Posts`, `Tags` or `Comments` object, return raw content.
+        """
+        return obj.fetch_content(self.handler)
+
 
 if __name__ == "__main__":
     """
     This is only for scuffed quick testing purposes, TODO: remove once done.
     """
-    #handler = RequestHandler()
     sb = Safebooru()
+    #post = Posts(id=sb.random_id)
+    #post = Posts(tags="akemi_homura")
 
-    post = Posts(id=sb.random_id)
-    print(sb.json_from(post)[0])
-    #print(post.image_url(handler))
-    #print(post.fetch_json(handler))
-
-    #print(sb.random_id)
+    #print(sb.json_from(post)[0])
