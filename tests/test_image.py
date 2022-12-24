@@ -10,4 +10,5 @@ class TestImage(TestCase):
         self.image = safebooru2.Image(self.img_dest, "j")
 
     def test_image_file_name(self):
-        self.assertEqual(self.image.file_name, "3605424.jpg")
+        self.assertEqual(self.image.file_name(), "3605424.jpg")
+        self.assertEqual(self.image.file_name("foo"), "foo.jpg")
