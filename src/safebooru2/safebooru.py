@@ -26,6 +26,7 @@ from enum import Enum, unique
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlparse
 from platform import uname
+from os import path, makedirs
 
 import requests
 import xmltodict
@@ -36,6 +37,7 @@ from requests import Session
 #region (global variables)
 
 __version__ = "v1.0.0"
+__license__ = "GNU GPLv3"
 
 #endregion
 
@@ -131,15 +133,15 @@ class Image:
     url: str
     ext: str
 
-    @property
-    def file_name(self) -> str:
+    def file_name(self, prefix: str | int = None) -> str:
         """
         The default file name to use for image fetch if nothing is entered.
         """
-        return f"{urlparse(self.url).query}{ImageType.which(self.ext)}"
+        prefix = urlparse(self.url).query if prefix is None else prefix
+        return f"{prefix}{ImageType.which(self.ext)}"
 
     def download(self, handler: RequestHandler,
-                 file_name: str = file_name) -> None:
+                 filename: str = None, directory: str = None) -> None:
         """
         Fetches the image file bytes from safebooru.org and writes to a file.
 
@@ -152,7 +154,11 @@ class Image:
         img.fetch(handler)
         ```
         """
-        with open(self.file_name, "wb") as file_object:
+        f = self.file_name() if filename is None else self.file_name(filename)
+        if directory is not None:
+            if path.exists(directory) is False: makedirs(directory)
+            f = path.join(directory, f)
+        with open(f, "wb") as file_object:
             file_object.write(handler.get(self.url).content)
 
 
@@ -218,9 +224,17 @@ class Posts:
         """
         return handler.get(self.url).text
 
-    def image_url(self, handler: RequestHandler, post_num: int = 0) -> str:
+    def image_url(self, json: dict) -> dict:
         """
-        The location where the image for the post is stored on safebooru.org.
+        Using a single post's json, return it's matching image dest.
+        """
+        url = urljoin(Safebooru._HOMEPAGE, f"images/{json['directory']}/" \
+                      f"{json['image']}?{json['id']}")
+        return url
+
+    def image_url_index(self, handler: RequestHandler, post_num: int = 0) -> str:
+        """
+        Get the image dest of specified post_num 0-99 (100).
         """
         json = self.fetch_json(handler)[post_num]  # Json index is post_num.
         url = urljoin(Safebooru._HOMEPAGE, f"images/{json['directory']}/" \
@@ -270,7 +284,7 @@ class Tags:
         """
         return RequestHandler._url_gen(Safebooru._HOMEPAGE,
                                       Safebooru._DEST, self.__params)
-    
+
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
         Fetch raw XML for specified tag[s] and use `xmltodict.parse()` to
@@ -394,7 +408,7 @@ class Safebooru(RequestHandler):
         Using a post's json data, return the shorthand version of image ext.
         """
         return json["image"][-3:-2]
-    
+
     def image_ext_full(self, json: dict) -> str:
         """
         Using a post's json data, return the full version of image ext.
@@ -422,13 +436,20 @@ class Safebooru(RequestHandler):
         """
         return obj.fetch_content(self.handler)
 
+    def download(self, post_obj: Posts, post_num: int = 0,
+                 filename: str = None, directory: str = None) -> None:
+        """
+        Download the corresponding image for the specified posts obj & index.
+        Default index for page is 0 incase ID is used for search (one post).
 
-if __name__ == "__main__":
-    """
-    This is only for scuffed quick testing purposes, TODO: remove once done.
-    """
-    sb = Safebooru()
-    #post = Posts(id=sb.random_id)
-    #post = Posts(tags="akemi_homura")
-
-    #print(sb.json_from(post)[0])
+        Usage
+        -----
+        ```
+        Safebooru().download(Posts(id=4241904), filename="magia")  # With ID.
+        Safebooru().download(Posts(tags="akemi_homura"), post_num=4)  # Tags.
+        ```
+        """
+        json = self.json_from(post_obj)[post_num]
+        img_url = post_obj.image_url(json)
+        Image(img_url, self.image_ext(json)).download(
+              self.handler, filename, directory)

@@ -23,3 +23,5 @@ __all__ = [
 
 def _main():
     print(f"Safebooru2 (ver: {__version__})\nUnder contruction...")
+
+    # TODO: an actual argsparse CLI goes here
