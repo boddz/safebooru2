@@ -42,8 +42,11 @@ pip install -r requirements.txt
 
 ## Usage
 
-Well right now, this is not really intended for use, however if you want to
-then you need to include the module `src.safebooru2` in `main.py` or something.
+At the moment, there aren't really any user friendly docs I have created
+for this, I have left some basic usage examples in the main.py file in the
+CWD. You can of course read through the `src/safebooru2/safebooru.py` file
+to get a feel for the module as well, I tried documenting everything in it
+to the best of my ability.
 
 
 ## Testing

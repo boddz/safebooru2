@@ -1,8 +1,8 @@
-Example in main
----------------
+More stuff with Tags
+--------------------
 
-Create a brief example of how to use the module (once more is comleted) in the
-main.py file.
+Add some methods in Tags or [and] Safebooru classes for parsing data from
+tags. This applies to Posts as well I guess, more methods for Posts too.
 
 
 Add pip setup
