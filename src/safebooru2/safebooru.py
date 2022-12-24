@@ -192,7 +192,7 @@ class Posts:
             "json": 1,
             "limit": self.limit,
             "pid": self.pid,
-            "tags": self.tags,
+            "tags": self.tags.replace(" ", "+"),
             "cid": self.cid,
             "id": self.id
         }
