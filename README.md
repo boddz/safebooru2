@@ -21,6 +21,10 @@ directory, or with this link: <https://www.gnu.org/licenses/gpl-3.0.en.html>
 
 This is currently in early development, there will be a lot of changes.
 
+This should in theory work perfectly fine with other similar booru sites that
+are using Gelbooru, however my main focus for this project is to target
+safebooru.org.
+
 
 ## Setup
 
