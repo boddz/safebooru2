@@ -66,3 +66,10 @@ Or individual tests by doing:
 ```bash
 python3 -m unittest tests/test_foo_bar.py
 ```
+
+
+## Contribution
+
+Please checkout and target the `devel` branch if contributing anything.
+
+Thanks.
