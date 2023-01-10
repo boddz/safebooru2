@@ -316,6 +316,11 @@ class Comments:
     suck, valid XML data is only returned if the post you are pointing to
     has more than one comment on it, else searching with ID shows nothing.
 
+    Update: I will not touch comments from now on, after contacting an
+    admin on the site and enquiring the above, it is something that sadly
+    most likely will not be fixed due to funding/ proprietary software used
+    on safebooru.org. It is not a priority.
+
     post_id:  The ID number of the comment to retrieve.
     show_all: Lists the comments index if set to True and if no ID is used.
     """
