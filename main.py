@@ -25,6 +25,9 @@ def main():
     # Download a specific post, specify name and directory.
     # sb.download(Posts(id=4241904), filename="magica!", directory="example")
 
+    # Download a post using tags query.
+    # sb.download(Posts(tags="akemi_homura", limit=5), post_num=3)
+
     # Find matching tags json data from `Tags` object and print it.
     # Note: this works with following objects: `Tags`, `Posts`, `Comments`.
     # print(sb.json_from(Tags(name="akemi_homura")))
