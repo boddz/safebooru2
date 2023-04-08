@@ -36,7 +36,7 @@ from requests import Session
 
 #region (global variables)
 
-__version__ = "v1.0.0"
+__version__ = "v1.0.1"
 __license__ = "GNU GPLv3"
 
 #endregion
