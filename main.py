@@ -21,6 +21,9 @@ def main():
     # Download a random post into specified directory.
     # Using `sb.random_id` is slower as it needs response from redirect URL.
     # sb.download(Posts(id=sb.random_id), directory="example/random_posts")
+    # Show verbose information about file while downloading w/ the following.
+    # sb.download(Posts(id=sb.random_id),
+    #             directory="example/random_posts", verbose=True)
 
     # Download a specific post, specify name and directory.
     # sb.download(Posts(id=4241904), filename="magica!", directory="example")

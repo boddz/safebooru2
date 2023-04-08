@@ -141,7 +141,8 @@ class Image:
         return f"{prefix}{ImageType.which(self.ext)}"
 
     def download(self, handler: RequestHandler,
-                 filename: str = None, directory: str = None) -> None:
+                 filename: str = None, directory: str = None,
+                 verbose: bool = False) -> None:
         """
         Fetches the image file bytes from safebooru.org and writes to a file.
 
@@ -154,12 +155,16 @@ class Image:
         img.fetch(handler)
         ```
         """
-        f = self.file_name() if filename is None else self.file_name(filename)
+        fp = self.file_name() if filename is None else self.file_name(filename)
+        f = fp  # Avoid "UnboundLocalError" during later print by using ptr.
         if directory is not None:
             if path.exists(directory) is False: makedirs(directory)
-            f = path.join(directory, f)
-        with open(f, "wb") as file_object:
-            file_object.write(handler.get(self.url).content)
+            fp = path.join(directory, f)
+        with open(fp, "wb") as file_object:
+            img_bytes = handler.get(self.url).content
+            size = "%.3f MB" % (len(img_bytes) / 1024 / 1024)
+            if verbose: print(f"Downloading image as: \"{f}\" ~ size: {size}")
+            file_object.write(img_bytes)
 
 
 @dataclass(frozen=True)
@@ -442,7 +447,8 @@ class Safebooru(RequestHandler):
         return obj.fetch_content(self.handler)
 
     def download(self, post_obj: Posts, post_num: int = 0,
-                 filename: str = None, directory: str = None) -> None:
+                 filename: str = None, directory: str = None,
+                 verbose: bool = False) -> None:
         """
         Download the corresponding image for the specified posts obj & index.
         Default index for page is 0 incase ID is used for search (one post).
@@ -456,5 +462,7 @@ class Safebooru(RequestHandler):
         """
         json = self.json_from(post_obj)[post_num]
         img_url = post_obj.image_url(json)
-        Image(img_url, self.image_ext(json)).download(
-              self.handler, filename, directory)
+        if verbose: Image(img_url, self.image_ext(json)).download(
+                          self.handler, filename, directory, True)
+        else: Image(img_url, self.image_ext(json)).download(
+                    self.handler, filename, directory)
