@@ -12,9 +12,9 @@ official documentation: <https://safebooru.org/index.php?page=help&topic=dapi>
 
 As safebooru.org is running a variant of Gelbooru, you can find a bit more
 documentation at: <https://gelbooru.com/index.php?page=wiki&s=view&id=18780>
-Other parts of gelbooru.com are NSFW, so heads up.
-
-Lotta inspiration from: <https://github.com/hentai-chan>
+Other parts of gelbooru.com are NSFW, so heads up. Also shoutout to
+<https://github.com/hentai-chan>, I learned some cool design ideas from their
+projects.
 
 To be released under the GNU GPLv3 licence, which can be found in the source
 directory, or with this link: <https://www.gnu.org/licenses/gpl-3.0.en.html>
@@ -155,12 +155,12 @@ class Image:
         img.fetch(handler)
         ```
         """
-        fp = self.file_name() if filename is None else self.file_name(filename)
-        f = fp  # Avoid "UnboundLocalError" during later print by using ptr.
+        p = self.file_name() if filename is None else self.file_name(filename)
+        f = p  # Avoid "UnboundLocalError" during later print by using ptr.
         if directory is not None:
             if path.exists(directory) is False: makedirs(directory)
-            fp = path.join(directory, f)
-        with open(fp, "wb") as file_object:
+            p = path.join(directory, f)
+        with open(p, "wb") as file_object:
             img_bytes = handler.get(self.url).content
             size = "%.3f MB" % (len(img_bytes) / 1024 / 1024)
             if verbose: print(f"Downloading image as: \"{f}\" ~ size: {size}")
@@ -237,7 +237,8 @@ class Posts:
                       f"{json['image']}?{json['id']}")
         return url
 
-    def image_url_index(self, handler: RequestHandler, post_num: int = 0) -> str:
+    def image_url_index(self, handler: RequestHandler,
+                        post_num: int = 0) -> str:
         """
         Get the image dest of specified post_num 0-99 (100).
         """
