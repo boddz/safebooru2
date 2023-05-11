@@ -31,10 +31,22 @@ safebooru.org.
 (Optional)
 I would first recommend setting up a virtual environment:
 
+Linux with bash:
+
 ```bash
 cd safebooru2
 python3 -m venv venv  # Should work with most systems, might require install.
 source venv/bin/activate  # Activate the venv.
+```
+
+Windows10 with PS:
+
+```powershell
+cd safebooru2
+# Need to set execution policy to be able to execute a script in PS.
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+python3 -m venv venv
+.\venv\Scripts\activate # Activate the venv.
 ```
 
 ### Install from PyPI
@@ -58,7 +70,8 @@ Once done, build the package:
 python -m build
 ```
 
-Finally, install the generated .whl file with pip:
+Finally, install the generatez .whl file with pip (also available in
+releases):
 
 ```bash
 # Of course this file name may vary depending on versioning and such.
@@ -83,21 +96,21 @@ CWD. You can of course read through the `src/safebooru2/safebooru.py` file
 to get a feel for the module as well, I tried documenting everything in it
 to the best of my ability.
 
- (I do plan on sitting down and creating some proper docs soon C:)
+(I do plan on sitting down and creating some proper docs soon C:)
 
 
 ## Testing
 
-Once setup, you can run all tests directly by doing:
+Single tests:
 
 ```bash
-make test  # Provided GNU make is installed.
+python -m unittest ./tests/test_example.py
 ```
 
-Or individual tests by doing:
+All tests:
 
 ```bash
-python3 -m unittest tests/test_foo_bar.py
+python -m unittest discover ./tests/
 ```
 
 
