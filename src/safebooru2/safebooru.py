@@ -289,7 +289,7 @@ class Tags:
         Endpoint for accessing data (XML) about specified tag[s].
         """
         return RequestHandler._url_gen(Safebooru._HOMEPAGE,
-                                      Safebooru._DEST, self.__params)
+                                       Safebooru._DEST, self.__params)
 
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
@@ -348,7 +348,7 @@ class Comments:
         Endpoint for accessing data (XML) about specified comments.
         """
         return RequestHandler._url_gen(Safebooru._HOMEPAGE,
-                                      Safebooru._DEST, self.__params)
+                                       Safebooru._DEST, self.__params)
 
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
