@@ -208,7 +208,7 @@ class Posts:
         Endpoint for accessing data (json) about specified post[s].
         """
         return RequestHandler._url_gen(Safebooru._HOMEPAGE,
-                                      Safebooru._DEST, self.__params)
+                                       Safebooru._DEST, self.__params)
 
     def fetch_json(self, handler: RequestHandler) -> dict:
         """
